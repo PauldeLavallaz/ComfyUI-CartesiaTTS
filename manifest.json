@@ -1,0 +1,13 @@
+{
+  "name": "ComfyUI-CartesiaTTS",
+  "author": "Paul + ChatGPT",
+  "version": "0.1.0",
+  "description": "Cartesia Sonic-3 TTS node for ComfyUI (/tts/bytes).",
+  "tags": [
+    "cartesia",
+    "tts",
+    "audio",
+    "sonic-3"
+  ],
+  "license": "MIT"
+}
