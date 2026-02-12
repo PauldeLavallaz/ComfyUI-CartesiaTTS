@@ -20,6 +20,8 @@ import os
 import json
 import tempfile
 import requests
+import soundfile as sf
+import torch
 
 SUPPORTED_CONTAINERS = ("wav", "mp3", "raw")
 
@@ -44,8 +46,8 @@ class CartesiaTTSNode:
             }
         }
 
-    RETURN_TYPES = ("STRING", "BYTES", "STRING")
-    RETURN_NAMES = ("file_path", "bytes", "url")
+    RETURN_TYPES = ("STRING", "BYTES", "STRING", "AUDIO")
+    RETURN_NAMES = ("file_path", "bytes", "url", "audio")
     FUNCTION = "run"
     CATEGORY = "Cartesia"
 
@@ -116,8 +118,17 @@ class CartesiaTTSNode:
         if upload_to_tmpfiles:
             url = self._upload_tmpfiles(path)
 
-        # Return absolute path, bytes, and a URL string (file:// or remote)
-        return (os.path.abspath(path), audio_bytes, url)
+        # Build AUDIO tensor from saved file
+        data, sr = sf.read(path, dtype="float32")
+        if data.ndim == 1:
+            audio_np = data
+        else:
+            audio_np = data.mean(axis=1)
+        audio_tensor = torch.from_numpy(audio_np).unsqueeze(0).unsqueeze(0).float()
+        audio_out = {"waveform": audio_tensor, "sample_rate": sr}
+
+        # Return absolute path, bytes, URL string, and AUDIO tensor
+        return (os.path.abspath(path), audio_bytes, url, audio_out)
 
 
 NODE_CLASS_MAPPINGS = {
